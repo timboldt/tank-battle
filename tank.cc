@@ -30,10 +30,10 @@
   void startRotatingTurretRight();
   void stopRotatingTurret();
 
-  float x() const { return bodySprite_.GetPosition().x; }
-  float y() const { return bodySprite_.GetPosition().y; }
-  float bodyRotation() const { return bodySprite_.GetRotation();
-  float turretRotation() const { return turretSprite_.GetRotation();
+  float x() const { return bodyTransform_.GetPosition().x; }
+  float y() const { return bodyTransform_.GetPosition().y; }
+  float bodyRotation() const { return bodyTransform_.GetRotation();
+  float turretRotation() const { return turretTransform_.GetRotation();
 
   void onTimePasses(float elapsedTime);
   void onDraw();
@@ -43,8 +43,8 @@
   float bodyRotationSpeed_;
   float turretRotationSpeed_;
 
-  Sprite bodySprite_;
-  Sprite turretSprite_;
+  Transform bodyTransform_;
+  Transform turretTransform_;
    */
 namespace tankbattle {
 
@@ -52,10 +52,10 @@ Tank::Tank(float x, float y, float body_angle, float turret_angle)
   : speed_(0),
     bodyRotationSpeed_(0),
     turretRotationSpeed_(0) {
-  bodySprite_.SetPosition(x, y);
-  bodySprite_.SetRotation(body_angle);
-  turretSprite_.SetPosition(x, y);
-  turretSprite_.SetRotation(turret_angle);
+  bodyTransform_.setPosition(x, y);
+  bodyTransform_.setRotation(body_angle);
+  turretTransform_.setPosition(x, y);
+  turretTransform_.setRotation(turret_angle);
 }
 
 Tank::~Tank() {
@@ -93,7 +93,7 @@ void Tank::startRotatingTurretRight() { }
 void Tank::stopRotatingTurret() { }
 
 void Tank::onTimePasses(float elapsedTime) {
-  bodySprite_.Move(speed_ * kSpeedMultiplier * elapsedTime, 0.0);
+  bodyTransform_.move(speed_ * kSpeedMultiplier * elapsedTime, 0.0);
 }
 
 void Tank::onDraw() { }

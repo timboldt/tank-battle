@@ -32,10 +32,10 @@ class Tank {
   void startRotatingTurretRight();
   void stopRotatingTurret();
 
-  float x() const { return bodySprite_.GetPosition().x; }
-  float y() const { return bodySprite_.GetPosition().y; }
-  float bodyRotation() const { return bodySprite_.GetRotation(); }
-  float turretRotation() const { return turretSprite_.GetRotation(); }
+  float x() const { return bodyTransform_.getPosition().x; }
+  float y() const { return bodyTransform_.getPosition().y; }
+  float bodyRotation() const { return bodyTransform_.getRotation(); }
+  float turretRotation() const { return turretTransform_.getRotation(); }
 
   void onTimePasses(float elapsedTime);
   void onDraw();
@@ -45,8 +45,8 @@ class Tank {
   float bodyRotationSpeed_;
   float turretRotationSpeed_;
 
-  sf::Sprite bodySprite_;
-  sf::Sprite turretSprite_;
+  sf::Transformable bodyTransform_;
+  sf::Transformable turretTransform_;
 };
 
 }

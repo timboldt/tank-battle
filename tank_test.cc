@@ -42,15 +42,37 @@ class Tank {
   void onTimePasses(float elapsedTime);
   void onDraw();
   */
+
+const int kTravelPerTimeUnit = Tank::kSpeedMax * Tank::kSpeedMultiplier;
+
 TEST(DrivingTest, SimpleDriveForward) { 
   Tank t(0.0, 0.0, 90.0, 90.0);
   t.startDrivingForwards();
   t.onTimePasses(1.0);
-  ASSERT_EQ(Tank::kSpeedMax * Tank::kSpeedMultiplier, t.x());
-  ASSERT_EQ(0.0, t.y());
+  ASSERT_FLOAT_EQ(kTravelPerTimeUnit, t.x());
+  ASSERT_FLOAT_EQ(0.0, t.y());
 }
  
+TEST(DrivingTest, SimpleForwardBackwards) { 
+  Tank t(0.0, 0.0, 0.0, 0.0);
+  t.startDrivingForwards();
+  t.onTimePasses(1.0);
+  ASSERT_FLOAT_EQ(0.0, t.x());
+  ASSERT_FLOAT_EQ(2.0 * kTravelPerTimeUnit, t.y());
+
+  t.stopDriving();
+  t.onTimePasses(1.0);
+  ASSERT_FLOAT_EQ(0.0, t.x());
+  ASSERT_FLOAT_EQ(kTravelPerTimeUnit, t.y());
+
+  // Assumes tank speed is the same forward and backwards
+  t.startDrivingBackwards();
+  t.onTimePasses(1.0);
+  ASSERT_FLOAT_EQ(0.0, t.x());
+  ASSERT_FLOAT_EQ(0.0, t.y());
 }
+
+} // Namespace
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
