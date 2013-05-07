@@ -40,6 +40,9 @@ class Tank {
   void onTimePasses(float elapsedTime);
   void onDraw();
 
+ protected:
+  void setDriveSpeed(float newSpeed);
+
  private:
   float speed_;
   float bodyRotationSpeed_;

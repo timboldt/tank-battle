@@ -62,16 +62,29 @@ Tank::~Tank() {
 }
 
 void Tank::startDrivingForwards() {
-  if (fabs(bodyRotationSpeed_) > 0.0) {
-    speed_ = kSpeedWhileRotating;
-    if (bodyRotationSpeed_ > 0.0) {
-      bodyRotationSpeed_ = kBodyRotationRateWhileDriving;
-    } else {
-      bodyRotationSpeed_ = -1.0 * kBodyRotationRateWhileDriving;
-    }
+  setDriveSpeed(kSpeedMax);
+}
+
+void Tank::startDrivingBackwards() {
+  setDriveSpeed(-1.0 * kSpeedMax);
+}
+
+void Tank::stopDriving() {
+  setDriveSpeed(0.0);
+}
+
+void Tank::setDriveSpeed(float newSpeed) {
+  // If we are driving and rotating at any significant rate, then both driving
+  // and turning will be slower.
+  if (fabs(newSpeed) > kSpeedMax * 0.1 &&
+      fabs(bodyRotationSpeed_) > kBodyRotationRateMax * 0.1) {
+    speed_ = newSpeed * kSpeedWhileRotating / kSpeedMax;
+    bodyRotationSpeed_ =
+      bodyRotationSpeed_ / fabs(bodyRotationSpeed_) *
+      kBodyRotationRateWhileDriving / kBodyRotationRateMax;
   }
   else {
-    speed_ = kSpeedMax;
+    speed_ = newSpeed;
   }
 }
 
@@ -83,8 +96,6 @@ void Tank::startDrivingForwards() {
   static const float kSpeedMultiplier = 100.0;
   static const float kRotationMultiplier = 100.0;
   */
-void Tank::startDrivingBackwards() { }
-void Tank::stopDriving() { }
 void Tank::startRotatingLeft() { }
 void Tank::startRotatingRight() { }
 void Tank::stopRotating() { }
@@ -93,7 +104,10 @@ void Tank::startRotatingTurretRight() { }
 void Tank::stopRotatingTurret() { }
 
 void Tank::onTimePasses(float elapsedTime) {
-  bodyTransform_.move(speed_ * kSpeedMultiplier * elapsedTime, 0.0);
+  float delta = speed_ * kSpeedMultiplier * elapsedTime;
+  float xv = cos(bodyTransform_.getRotation()*M_PI/180);
+  float yv = sin(bodyTransform_.getRotation()*M_PI/180);
+  bodyTransform_.move(delta * xv, delta * yv);
 }
 
 void Tank::onDraw() { }

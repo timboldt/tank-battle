@@ -45,31 +45,59 @@ class Tank {
 
 const int kTravelPerTimeUnit = Tank::kSpeedMax * Tank::kSpeedMultiplier;
 
-TEST(DrivingTest, SimpleDriveForward) { 
-  Tank t(0.0, 0.0, 90.0, 90.0);
+TEST(DrivingTest, DriveForwardEast) { 
+  Tank t(0.0, 0.0, 0.0, 0.0);
+
   t.startDrivingForwards();
   t.onTimePasses(1.0);
-  ASSERT_FLOAT_EQ(kTravelPerTimeUnit, t.x());
-  ASSERT_FLOAT_EQ(0.0, t.y());
+  ASSERT_NEAR(kTravelPerTimeUnit, t.x(), 0.1);
+  ASSERT_NEAR(0.0, t.y(), 0.1);
+}
+
+TEST(DrivingTest, DriveForwardWest) { 
+  Tank t(0.0, 0.0, 180.0, 0.0);
+
+  t.startDrivingForwards();
+  t.onTimePasses(1.0);
+  ASSERT_NEAR(-1.0 * kTravelPerTimeUnit, t.x(), 0.1);
+  ASSERT_NEAR(0.0, t.y(), 0.1);
+}
+TEST(DrivingTest, DriveForwardNorth) { 
+  Tank t(0.0, 0.0, -90.0, 0.0);
+
+  t.startDrivingForwards();
+  t.onTimePasses(1.0);
+  ASSERT_NEAR(0.0, t.x(), 0.1);
+  ASSERT_NEAR(-1.0 * kTravelPerTimeUnit, t.y(), 0.1);
+}
+
+TEST(DrivingTest, DriveForwardSouth) { 
+  Tank t(0.0, 0.0, 90.0, 0.0);
+
+  t.startDrivingForwards();
+  t.onTimePasses(1.0);
+  ASSERT_NEAR(0.0, t.x(), 0.1);
+  ASSERT_NEAR(kTravelPerTimeUnit, t.y(), 0.1);
 }
  
 TEST(DrivingTest, SimpleForwardBackwards) { 
-  Tank t(0.0, 0.0, 0.0, 0.0);
+  Tank t(0.0, 0.0, 90.0, 0.0);
+
   t.startDrivingForwards();
   t.onTimePasses(1.0);
-  ASSERT_FLOAT_EQ(0.0, t.x());
-  ASSERT_FLOAT_EQ(2.0 * kTravelPerTimeUnit, t.y());
+  ASSERT_NEAR(0.0, t.x(), 0.1);
+  ASSERT_NEAR(kTravelPerTimeUnit, t.y(), 0.1);
 
   t.stopDriving();
   t.onTimePasses(1.0);
-  ASSERT_FLOAT_EQ(0.0, t.x());
-  ASSERT_FLOAT_EQ(kTravelPerTimeUnit, t.y());
+  ASSERT_NEAR(0.0, t.x(), 0.1);
+  ASSERT_NEAR(kTravelPerTimeUnit, t.y(), 0.1);
 
   // Assumes tank speed is the same forward and backwards
   t.startDrivingBackwards();
   t.onTimePasses(1.0);
-  ASSERT_FLOAT_EQ(0.0, t.x());
-  ASSERT_FLOAT_EQ(0.0, t.y());
+  ASSERT_NEAR(0.0, t.x(), 0.1);
+  ASSERT_NEAR(0.0, t.y(), 0.1);
 }
 
 } // Namespace
