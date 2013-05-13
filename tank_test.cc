@@ -1,105 +1,211 @@
-// Copyright (C) 2013, Tim Boldt
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+// Copyright (C) 2013, Tim Boldt.  All rights reserved.
 
+//#include <SFML/Vector2.hpp>
 #include <gtest/gtest.h>
+#include <cmath>
 #include "tank.h"
- 
+
 namespace tankbattle {
 
-/*
-class Tank {
- public:
-  static const float kSpeedMax = 1.0;
-  static const float kSpeedWhileRotating = 0.8;
-  static const float kBodyRotationRateMax = 1.0;
-  static const float kBodyRotationRateWhileDriving = 0.5;
-  static const float kTurretRotationRateMax = 2.0;
-  static const float kSpeedMultiplier = 100.0;
-  static const float kRotationMultiplier = 100.0;
+const float kEast = 0.0;
+const float kWest = 180.0;
+const float kNorth = 270.0;
+const float kSouth = 90.0;
+const float kTriangle345 = 36.86; // A 3-4-5 triangle has this angle between the "4" and "5" sides 
 
-  Tank(float x, float y, float body_angle, float turret_angle); 
-  virtual ~Tank();
+bool IsNearLocation(const Tank& t, const Vector& v) {
+  float kFudgeFactor = 0.1;
+  const Vector& vt = t.location();
 
-  void startDrivingForwards();
-  void startDrivingBackwards();
-  void stopDriving();
-
-  void startRotatingLeft();
-  void startRotatingRight();
-  void stopRotating();
-
-  void startRotatingTurretLeft();
-  void startRotatingTurretRight();
-  void stopRotatingTurret();
-
-  float x() const { return bodySprite_.GetPosition().x; }
-  float y() const { return bodySprite_.GetPosition().y; }
-  float bodyRotation() const { return bodySprite_.GetRotation();
-  float turretRotation() const { return turretSprite_.GetRotation();
-
-  void onTimePasses(float elapsedTime);
-  void onDraw();
-  */
-
-const int kTravelPerTimeUnit = Tank::kSpeedMax * Tank::kSpeedMultiplier;
-
-TEST(DrivingTest, DriveForwardEast) { 
-  Tank t(0.0, 0.0, 0.0, 0.0);
-
-  t.startDrivingForwards();
-  t.onTimePasses(1.0);
-  ASSERT_NEAR(kTravelPerTimeUnit, t.x(), 0.1);
-  ASSERT_NEAR(0.0, t.y(), 0.1);
+  return fabs(vt.x - v.x) < kFudgeFactor && fabs(vt.y - v.y) < kFudgeFactor;
 }
 
-TEST(DrivingTest, DriveForwardWest) { 
-  Tank t(0.0, 0.0, 180.0, 0.0);
+bool HasSpeed(const Tank& t, float speed) {
+  float kFudgeFactor = 0.1;
 
-  t.startDrivingForwards();
-  t.onTimePasses(1.0);
-  ASSERT_NEAR(-1.0 * kTravelPerTimeUnit, t.x(), 0.1);
-  ASSERT_NEAR(0.0, t.y(), 0.1);
-}
-TEST(DrivingTest, DriveForwardNorth) { 
-  Tank t(0.0, 0.0, -90.0, 0.0);
-
-  t.startDrivingForwards();
-  t.onTimePasses(1.0);
-  ASSERT_NEAR(0.0, t.x(), 0.1);
-  ASSERT_NEAR(-1.0 * kTravelPerTimeUnit, t.y(), 0.1);
+  return fabs(t.speed() - speed) < kFudgeFactor;
 }
 
-TEST(DrivingTest, DriveForwardSouth) { 
-  Tank t(0.0, 0.0, 90.0, 0.0);
-
+TEST(DrivingTest, SimpleForwardBackward) {
+  Tank t(0.0, 0.0, kNorth);
   t.startDrivingForwards();
   t.onTimePasses(1.0);
-  ASSERT_NEAR(0.0, t.x(), 0.1);
-  ASSERT_NEAR(kTravelPerTimeUnit, t.y(), 0.1);
-}
- 
-TEST(DrivingTest, SimpleForwardBackwards) { 
-  Tank t(0.0, 0.0, 90.0, 0.0);
-
-  t.startDrivingForwards();
-  t.onTimePasses(1.0);
-  ASSERT_NEAR(0.0, t.x(), 0.1);
-  ASSERT_NEAR(kTravelPerTimeUnit, t.y(), 0.1);
+  EXPECT_PRED2(IsNearLocation, t, Vector(0.0, -1.0 * kSpeedMax))
+    << "After driving forward";
 
   t.stopDriving();
   t.onTimePasses(1.0);
-  ASSERT_NEAR(0.0, t.x(), 0.1);
-  ASSERT_NEAR(kTravelPerTimeUnit, t.y(), 0.1);
+  EXPECT_PRED2(IsNearLocation, t, Vector(0.0, -1.0 * kSpeedMax))
+    << "After being stopped";
+
+  t.startDrivingBackwards();
+  t.onTimePasses(1.0);
+  EXPECT_PRED2(IsNearLocation, t, Vector(0.0, 0.0))
+    << "After driving backward";
+}
+
+TEST(DrivingTest, DriveAtAnAngle) { 
+  Tank t(0.0, 0.0, kTriangle345);
+  t.startDrivingForwards();
+  t.onTimePasses(5.0);
+  EXPECT_PRED2(IsNearLocation, t, Vector(4.0 * kSpeedMax, 3.0 * kSpeedMax));
+}
+
+TEST(DrivingTest, DriveInASquarePattern) { 
+  Tank t(0.0, 0.0, kEast);
+
+  t.startDrivingForwards();
+  t.onTimePasses(1.0);
+  t.stopDriving();
+  EXPECT_PRED2(IsNearLocation, t, Vector(kSpeedMax, 0.0))
+    << "After travelling east";
+
+  t.startRotatingRight();
+  t.onTimePasses(90.0 / kBodyRotationRateMax);
+  t.stopRotating();
+
+  t.startDrivingForwards();
+  t.onTimePasses(1.0);
+  t.stopDriving();
+  EXPECT_PRED2(IsNearLocation, t, Vector(kSpeedMax, kSpeedMax))
+    << "After travelling south";
+
+  t.startRotatingRight();
+  t.onTimePasses(90.0 / kBodyRotationRateMax);
+  t.stopRotating();
+
+  t.startDrivingForwards();
+  t.onTimePasses(1.0);
+  t.stopDriving();
+  EXPECT_PRED2(IsNearLocation, t, Vector(0.0, kSpeedMax))
+    << "After travelling west";
+
+  t.startRotatingRight();
+  t.onTimePasses(90.0 / kBodyRotationRateMax);
+  t.stopRotating();
+
+  t.startDrivingForwards();
+  t.onTimePasses(1.0);
+  t.stopDriving();
+  EXPECT_PRED2(IsNearLocation, t, Vector(0.0, 0.0))
+    << "After travelling north";
+}
+
+/*
+
+	tank.StartDrivingForwards()
+	tank.OnTimePasses(1.0)
+	tank.StopDriving()
+	checkLocation(t, "After travelling south", tank.Location(), Vector2D{SpeedMax, SpeedMax})
+
+	tank.StartRotatingRight()
+	tank.OnTimePasses(90.0 / BodyRotationRateMax)
+	tank.StopRotating()
+
+	tank.StartDrivingForwards()
+	tank.OnTimePasses(1.0)
+	tank.StopDriving()
+	checkLocation(t, "After travelling west", tank.Location(), Vector2D{0.0, SpeedMax})
+
+	tank.StartRotatingRight()
+	tank.OnTimePasses(90.0 / BodyRotationRateMax)
+	tank.StopRotating()
+
+	tank.StartDrivingForwards()
+	tank.OnTimePasses(1.0)
+	tank.StopDriving()
+	checkLocation(t, "After travelling north", tank.Location(), Vector2D{0.0, 0.0})
+}
+
+func TestDriveInACircle(t *testing.T) {
+	tank := Tank{Vector2D{1.0, 0.0}, South, South, MovingForward, RotatingRight, NotTurning}
+	tank.OnTimePasses(180.0 / BodyRotationRateWhileDriving)
+	checkFloat(t, "Angle after travelling 180 degrees", tank.BodyAngle(), North)
+	tank.OnTimePasses(180.0 / BodyRotationRateWhileDriving)
+	checkLocation(t, "After travelling 360 degrees", tank.Location(), Vector2D{1.0, 0.0})
+}
+*/
+/*
+TEST(DrivingTest, DriveForward) { 
+  {
+    Tank t(0.0, 0.0, kEast, 0.0);
+
+    t.startDrivingForwards();
+    t.onTimePasses(1.0);
+    EXPECT_PRED2(IsNearLocation, t, Vector(kSpeedMax, 0));
+  }
+
+  {
+    Tank t(0.0, 0.0, kWest, 0.0);
+
+    t.startDrivingForwards();
+    t.onTimePasses(1.0);
+    EXPECT_PRED2(IsNearLocation, t, Vector(-1.0 * kSpeedMax, 0));
+  }
+
+  {
+    Tank t(0.0, 0.0, kNorth, 0.0);
+
+    t.startDrivingForwards();
+    t.onTimePasses(1.0);
+    EXPECT_PRED2(IsNearLocation, t, Vector(0, -1.0 * kSpeedMax));
+  }
+
+  {
+    Tank t(0.0, 0.0, kSouth, 0.0);
+
+    t.startDrivingForwards();
+    t.onTimePasses(1.0);
+    EXPECT_PRED2(IsNearLocation, t, Vector(0, kSpeedMax));
+  }
+
+  {
+    // 3-4-5 triangle = 36.86 degrees
+    Tank t(0.0, 0.0, 36.86, 0.0);
+
+    t.startDrivingForwards();
+    t.onTimePasses(5.0);
+    EXPECT_PRED2(IsNearLocation, t, Vector(4.0 * kSpeedMax, 3.0 * kSpeedMax));
+  }
+}
+
+TEST(DrivingTest, SimpleForwardBackwards) { 
+  Tank t(0.0, 0.0, kSouth, 0.0);
+
+  t.startDrivingForwards();
+  t.onTimePasses(1.0);
+  EXPECT_PRED2(IsNearLocation, t, Vector(0.0, 1.0 * kSpeedMax));
+
+  t.stopDriving();
+  t.onTimePasses(1.0);
+  EXPECT_PRED2(IsNearLocation, t, Vector(0.0, 1.0 * kSpeedMax));
 
   // Assumes tank speed is the same forward and backwards
   t.startDrivingBackwards();
   t.onTimePasses(1.0);
-  ASSERT_NEAR(0.0, t.x(), 0.1);
-  ASSERT_NEAR(0.0, t.y(), 0.1);
+  EXPECT_PRED2(IsNearLocation, t, Vector(0.0, 0.0));
 }
 
+TEST(DrivingTest, SquarePattern) { 
+  Tank t(0.0, 0.0, kEast, 0.0);
+
+  for (int i = 0; i < 4; ++i) {
+    t.startDrivingForwards();
+    t.onTimePasses(1.0);
+
+    t.stopDriving();
+    t.onTimePasses(1.0);
+    EXPECT_NEAR(1.0, std::max(fabs(t.location().x), fabs(t.location().y)), 0.1);
+
+    t.startRotatingRight();
+    const float kBodyRotationPerTimeUnit = 90.0; //TODO
+    t.onTimePasses(90.0 / kBodyRotationPerTimeUnit);
+    t.stopRotating();
+    EXPECT_NEAR(90.0 * i, t.bodyRotation(), 0.1);
+  }
+  EXPECT_PRED2(IsNearLocation, t, Vector(0.0, 0.0));
+}
+*/
 } // Namespace
 
 int main(int argc, char **argv) {
