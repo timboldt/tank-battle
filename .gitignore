@@ -17,6 +17,7 @@ tank-battle
 runTests
 
 # CMake stuff
+CMakeFiles/
 CMakeCache.txt
 Makefile
 cmake_install.cmake
