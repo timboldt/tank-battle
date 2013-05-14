@@ -19,12 +19,6 @@ bool IsNearLocation(const Tank& t, const Vector& v) {
 
   return fabs(vt.x - v.x) < kFudgeFactor && fabs(vt.y - v.y) < kFudgeFactor;
 }
-/*
-bool HasSpeed(const Tank& t, float speed) {
-  float kFudgeFactor = 0.1;
-
-  return fabs(t.speed() - speed) < kFudgeFactor;
-}*/
 
 TEST(DrivingTest, SimpleForwardBackward) {
   Tank t(0.0, 0.0, kNorth);
@@ -101,96 +95,7 @@ TEST(DrivingTest, DriveInACircle) {
   t.onTimePasses(180.0 / kBodyRotationRateWhileDriving);
   EXPECT_PRED2(IsNearLocation, t, Vector(1.0, 0.0));
 }
-/*
 
-
-func TestDriveInACircle(t *testing.T) {
-	checkFloat(t, "Angle after travelling 180 degrees", tank.BodyAngle(), North)
-	tank.OnTimePasses(180.0 / BodyRotationRateWhileDriving)
-	checkLocation(t, "After travelling 360 degrees", tank.Location(), Vector2D{1.0, 0.0})
-}
-*/
-/*
-TEST(DrivingTest, DriveForward) { 
-  {
-    Tank t(0.0, 0.0, kEast, 0.0);
-
-    t.startDrivingForwards();
-    t.onTimePasses(1.0);
-    EXPECT_PRED2(IsNearLocation, t, Vector(kSpeedMax, 0));
-  }
-
-  {
-    Tank t(0.0, 0.0, kWest, 0.0);
-
-    t.startDrivingForwards();
-    t.onTimePasses(1.0);
-    EXPECT_PRED2(IsNearLocation, t, Vector(-1.0 * kSpeedMax, 0));
-  }
-
-  {
-    Tank t(0.0, 0.0, kNorth, 0.0);
-
-    t.startDrivingForwards();
-    t.onTimePasses(1.0);
-    EXPECT_PRED2(IsNearLocation, t, Vector(0, -1.0 * kSpeedMax));
-  }
-
-  {
-    Tank t(0.0, 0.0, kSouth, 0.0);
-
-    t.startDrivingForwards();
-    t.onTimePasses(1.0);
-    EXPECT_PRED2(IsNearLocation, t, Vector(0, kSpeedMax));
-  }
-
-  {
-    // 3-4-5 triangle = 36.86 degrees
-    Tank t(0.0, 0.0, 36.86, 0.0);
-
-    t.startDrivingForwards();
-    t.onTimePasses(5.0);
-    EXPECT_PRED2(IsNearLocation, t, Vector(4.0 * kSpeedMax, 3.0 * kSpeedMax));
-  }
-}
-
-TEST(DrivingTest, SimpleForwardBackwards) { 
-  Tank t(0.0, 0.0, kSouth, 0.0);
-
-  t.startDrivingForwards();
-  t.onTimePasses(1.0);
-  EXPECT_PRED2(IsNearLocation, t, Vector(0.0, 1.0 * kSpeedMax));
-
-  t.stopDriving();
-  t.onTimePasses(1.0);
-  EXPECT_PRED2(IsNearLocation, t, Vector(0.0, 1.0 * kSpeedMax));
-
-  // Assumes tank speed is the same forward and backwards
-  t.startDrivingBackwards();
-  t.onTimePasses(1.0);
-  EXPECT_PRED2(IsNearLocation, t, Vector(0.0, 0.0));
-}
-
-TEST(DrivingTest, SquarePattern) { 
-  Tank t(0.0, 0.0, kEast, 0.0);
-
-  for (int i = 0; i < 4; ++i) {
-    t.startDrivingForwards();
-    t.onTimePasses(1.0);
-
-    t.stopDriving();
-    t.onTimePasses(1.0);
-    EXPECT_NEAR(1.0, std::max(fabs(t.location().x), fabs(t.location().y)), 0.1);
-
-    t.startRotatingRight();
-    const float kBodyRotationPerTimeUnit = 90.0; //TODO
-    t.onTimePasses(90.0 / kBodyRotationPerTimeUnit);
-    t.stopRotating();
-    EXPECT_NEAR(90.0 * i, t.bodyRotation(), 0.1);
-  }
-  EXPECT_PRED2(IsNearLocation, t, Vector(0.0, 0.0));
-}
-*/
 } // Namespace
 
 int main(int argc, char **argv) {
