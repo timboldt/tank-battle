@@ -1,4 +1,4 @@
-// Copyright (C) 2013, Tim Boldt.  All rights reserved.
+// Copyright (C) 2013, Tim Boldt
 
 #ifndef TANK_H
 #define TANK_H
@@ -11,8 +11,8 @@ namespace tankbattle {
 const float kSpeedMax = 100.0;
 const float kSpeedWhileRotating = 80.0;
 
-const float kBodyRotationRateMax = 45.0;
-const float kBodyRotationRateWhileDriving = 22.5; 
+const float kBodyRotationRateMax = 90.0;
+const float kBodyRotationRateWhileDriving = 45.0; 
 const float kTurretRotationRateMax = 90.0;
 
 typedef sf::Vector2<float> Vector;
@@ -46,7 +46,7 @@ class Tank {
   float turretRotationRate();
 
   void onTimePasses(float elapsedTime);
-  void onDraw();
+  void onDraw(sf::RenderWindow& window);
 
  private:
   MotionDirection motion_direction_;

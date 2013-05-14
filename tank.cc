@@ -1,4 +1,4 @@
-// Copyright (C) 2013, Tim Boldt.  All rights reserved.
+// Copyright (C) 2013, Tim Boldt
 
 #include <cmath>
 #include <iomanip>
@@ -68,8 +68,28 @@ void Tank::onTimePasses(float elapsedTime) {
   }
 }
 
-void Tank::onDraw() {
+void Tank::onDraw(sf::RenderWindow& window) {
+  sf::RectangleShape body_shell(Vector(32,32));
+  body_shell.setFillColor(sf::Color::White);
+  body_shell.setOrigin(16,16);
+  body_shell.setPosition(bodyTransform_.getPosition());
+  body_shell.setRotation(bodyTransform_.getRotation());
 
+  sf::CircleShape turret_shell(10);
+  turret_shell.setFillColor(sf::Color::Red);
+  turret_shell.setOrigin(10,10);
+  turret_shell.setPosition(bodyTransform_.getPosition());
+  turret_shell.setRotation(bodyTransform_.getRotation());
+  
+  sf::RectangleShape turret_gun(Vector(24,4));
+  turret_gun.setFillColor(sf::Color::Blue);
+  turret_gun.setOrigin(0,2);
+  turret_gun.setPosition(bodyTransform_.getPosition());
+  turret_gun.setRotation(turretTransform_.getRotation());
+
+  window.draw(body_shell);
+  window.draw(turret_shell);
+  window.draw(turret_gun);
 }
 
 float Tank::speed() const {
