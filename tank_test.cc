@@ -19,12 +19,12 @@ bool IsNearLocation(const Tank& t, const Vector& v) {
 
   return fabs(vt.x - v.x) < kFudgeFactor && fabs(vt.y - v.y) < kFudgeFactor;
 }
-
+/*
 bool HasSpeed(const Tank& t, float speed) {
   float kFudgeFactor = 0.1;
 
   return fabs(t.speed() - speed) < kFudgeFactor;
-}
+}*/
 
 TEST(DrivingTest, SimpleForwardBackward) {
   Tank t(0.0, 0.0, kNorth);
@@ -91,35 +91,20 @@ TEST(DrivingTest, DriveInASquarePattern) {
     << "After travelling north";
 }
 
+TEST(DrivingTest, DriveInACircle) { 
+  Tank t(1.0, 0.0, kSouth);
+
+  t.startDrivingForwards();
+  t.startRotatingRight();
+  t.onTimePasses(180.0 / kBodyRotationRateWhileDriving);
+  EXPECT_NEAR(kNorth, t.bodyRotation(), 0.1);
+  t.onTimePasses(180.0 / kBodyRotationRateWhileDriving);
+  EXPECT_PRED2(IsNearLocation, t, Vector(1.0, 0.0));
+}
 /*
 
-	tank.StartDrivingForwards()
-	tank.OnTimePasses(1.0)
-	tank.StopDriving()
-	checkLocation(t, "After travelling south", tank.Location(), Vector2D{SpeedMax, SpeedMax})
-
-	tank.StartRotatingRight()
-	tank.OnTimePasses(90.0 / BodyRotationRateMax)
-	tank.StopRotating()
-
-	tank.StartDrivingForwards()
-	tank.OnTimePasses(1.0)
-	tank.StopDriving()
-	checkLocation(t, "After travelling west", tank.Location(), Vector2D{0.0, SpeedMax})
-
-	tank.StartRotatingRight()
-	tank.OnTimePasses(90.0 / BodyRotationRateMax)
-	tank.StopRotating()
-
-	tank.StartDrivingForwards()
-	tank.OnTimePasses(1.0)
-	tank.StopDriving()
-	checkLocation(t, "After travelling north", tank.Location(), Vector2D{0.0, 0.0})
-}
 
 func TestDriveInACircle(t *testing.T) {
-	tank := Tank{Vector2D{1.0, 0.0}, South, South, MovingForward, RotatingRight, NotTurning}
-	tank.OnTimePasses(180.0 / BodyRotationRateWhileDriving)
 	checkFloat(t, "Angle after travelling 180 degrees", tank.BodyAngle(), North)
 	tank.OnTimePasses(180.0 / BodyRotationRateWhileDriving)
 	checkLocation(t, "After travelling 360 degrees", tank.Location(), Vector2D{1.0, 0.0})
