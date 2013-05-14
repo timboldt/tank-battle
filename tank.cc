@@ -65,11 +65,13 @@ void Tank::onTimePasses(float elapsedTime) {
     float xv = cos(bodyTransform_.getRotation()*M_PI/180);
     float yv = sin(bodyTransform_.getRotation()*M_PI/180);
     bodyTransform_.move(delta * xv, delta * yv);
+
+    turretTransform_.rotate(turretRotationRate() * deltaTime);
   }
 }
 
 void Tank::onDraw(sf::RenderWindow& window) {
-  sf::RectangleShape body_shell(Vector(32,32));
+  sf::RectangleShape body_shell(Vector(40,32));
   body_shell.setFillColor(sf::Color::White);
   body_shell.setOrigin(16,16);
   body_shell.setPosition(bodyTransform_.getPosition());
@@ -81,7 +83,7 @@ void Tank::onDraw(sf::RenderWindow& window) {
   turret_shell.setPosition(bodyTransform_.getPosition());
   turret_shell.setRotation(bodyTransform_.getRotation());
   
-  sf::RectangleShape turret_gun(Vector(24,4));
+  sf::RectangleShape turret_gun(Vector(30,4));
   turret_gun.setFillColor(sf::Color::Blue);
   turret_gun.setOrigin(0,2);
   turret_gun.setPosition(bodyTransform_.getPosition());
@@ -127,8 +129,19 @@ float Tank::bodyRotationRate() {
 }
 
 float Tank::turretRotationRate() {
-  // TODO
-  return 10.0;
+  float r = kTurretRotationRateMax;
+
+  switch (turret_rotation_direction_) {
+    case kRight:
+      break;
+    case kLeft:
+      r *= -1.0;
+      break;
+    default:
+      r = 0.0;
+  }
+
+  return r;
 }
 
 

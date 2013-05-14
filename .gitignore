@@ -11,3 +11,12 @@
 *.lai
 *.la
 *.a
+
+# Executables
+tank-battle
+runTests
+
+# CMake stuff
+CMakeCache.txt
+Makefile
+cmake_install.cmake

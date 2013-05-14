@@ -21,6 +21,35 @@ int main()
           window.close();
       }
     }
+
+    // Turning
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+      t1.startRotatingLeft();
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+      t1.startRotatingRight();
+    } else {
+      t1.stopRotating();
+    }
+
+    // Turning
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
+      t1.startRotatingTurretLeft();
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
+      t1.startRotatingTurretRight();
+    } else {
+      t1.stopRotatingTurret();
+    }
+
+    // Driving
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
+      t1.startDrivingForwards();
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
+      t1.startDrivingBackwards();
+    } else {
+      t1.stopDriving();
+    }
+
+
     sf::Time elapsed = clock.restart();
     t1.onTimePasses(elapsed.asSeconds());
 

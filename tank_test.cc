@@ -96,6 +96,39 @@ TEST(DrivingTest, DriveInACircle) {
   EXPECT_PRED2(IsNearLocation, t, Vector(1.0, 0.0));
 }
 
+TEST(TurretTest, BasicTurret) { 
+  Tank t(1.0, 0.0, kWest);
+  EXPECT_NEAR(kWest, t.turretRotation(), 0.1)
+    << "At start";
+
+  t.startRotatingTurretRight();
+  t.onTimePasses(90.0 / kTurretRotationRateMax);
+  EXPECT_NEAR(kNorth, t.turretRotation(), 0.1)
+    << "After rotating right";
+
+  t.startRotatingTurretLeft();
+  t.onTimePasses(270.0 / kTurretRotationRateMax);
+  EXPECT_NEAR(kEast, t.turretRotation(), 0.1)
+    << "After rotating left";
+
+  t.stopRotatingTurret();
+  t.onTimePasses(90.0 / kTurretRotationRateMax);
+  EXPECT_NEAR(kEast, t.turretRotation(), 0.1)
+    << "After rotating stopped";
+}
+
+TEST(TurretTest, SteadyTurret) { 
+  Tank t(1.0, 0.0, kSouth);
+  EXPECT_NEAR(kSouth, t.turretRotation(), 0.1)
+    << "At start";
+
+  t.startDrivingForwards();
+  t.startRotatingRight();
+  t.onTimePasses(45.0 / kBodyRotationRateWhileDriving);
+  EXPECT_NEAR(kSouth, t.turretRotation(), 0.1)
+    << "After driving and turning";
+}
+
 } // Namespace
 
 int main(int argc, char **argv) {

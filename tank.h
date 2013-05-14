@@ -9,11 +9,11 @@
 namespace tankbattle {
 
 const float kSpeedMax = 100.0;
-const float kSpeedWhileRotating = 80.0;
+const float kSpeedWhileRotating = 50.0;
 
 const float kBodyRotationRateMax = 90.0;
 const float kBodyRotationRateWhileDriving = 45.0; 
-const float kTurretRotationRateMax = 90.0;
+const float kTurretRotationRateMax = 180.0;
 
 typedef sf::Vector2<float> Vector;
 
