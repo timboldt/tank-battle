@@ -6,14 +6,57 @@
 
 namespace tankbattle {
 
-Tank::Tank(float x, float y, float body_angle)
+Tank::Tank(b2World* physics, float x, float y, float body_angle)
   : motion_direction_(kStopped),
     body_rotation_direction_(kNone),
     turret_rotation_direction_(kNone) {
-  bodyTransform_.setPosition(x, y);
-  bodyTransform_.setRotation(body_angle);
-  turretTransform_.setPosition(x, y);
-  turretTransform_.setRotation(body_angle);
+
+  // Tank Body
+  {
+    b2BodyDef body_def;
+    body_def.type = b2_dynamicBody;
+    body_def.position.Set(x, y);
+    body_def.angle = body_angle; // TODO(tboldt) determine if we are going to use radians or degrees
+    body_def.linearDamping = 1.0;
+    body_def.angularDamping = 1.0;
+    tank_body_ = physics->CreateBody(&body_def);
+
+    b2PolygonShape dynamicBox;
+    dynamicBox.SetAsBox(8.0f, 4.0f);
+
+    b2FixtureDef fixtureDef;
+    fixtureDef.shape = &dynamicBox;
+    fixtureDef.density = 2.0f;
+    fixtureDef.friction = 0.3f;
+
+    tank_body_->CreateFixture(&fixtureDef);
+  }
+
+  // Turret
+  {
+    b2BodyDef body_def;
+    body_def.type = b2_dynamicBody;
+    body_def.position.Set(x, y);
+    body_def.angle = body_angle + 1.0; // TODO(tboldt) determine if we are going to use radians or degrees
+    turret_body_ = physics->CreateBody(&body_def);
+
+    b2PolygonShape dynamicBox;
+    dynamicBox.SetAsBox(6.0f, 3.0f);
+
+    b2FixtureDef fixtureDef;
+    fixtureDef.shape = &dynamicBox;
+    fixtureDef.density = 0.5f;
+    fixtureDef.friction = 0.3f;
+
+    turret_body_->CreateFixture(&fixtureDef);
+
+    b2RevoluteJointDef joint_def;
+    joint_def.Initialize(tank_body_, turret_body_, tank_body_->GetWorldCenter());
+    joint_def.enableMotor = true;
+    joint_def.motorSpeed = 0;
+    joint_def.maxMotorTorque = 100000;
+    turret_joint_ = (b2RevoluteJoint*)physics->CreateJoint(&joint_def);
+  }
 }
 
 Tank::~Tank() {
@@ -55,23 +98,71 @@ void Tank::stopRotatingTurret() {
   turret_rotation_direction_ = kNone;
 } 
 
-void Tank::onTimePasses(float elapsedTime) {
-  for (float totalTime = 0.0; totalTime < elapsedTime; totalTime += 0.1) {
-    float deltaTime = std::min(0.1f, elapsedTime - totalTime);
+void Tank::PrePhysics(float elapsed_seconds) {
+  /*protected void updateWheelBody (World world, Body body, float deltaTime) {
+  Vector2 velocity = body.getLinearVelocityFromLocalPoint(vector.set(0f, 0f));
+  transformRcol2(body.getTransform(), vector);
+  vector.mul(velocity.dot(vector)).sub(velocity);
+  float len = vector.len();
+  if (len > 0.00001f) {
+    final float traction = 15f;
+    if (len > traction) 
+      vector.mul(traction / len);
+    body.applyLinearImpulse(vector, body.getPosition());
+  }
+}*/
+  float kTrackForce = 10000.0;
+  b2Vec2 trackForce = tank_body_->GetWorldVector(b2Vec2(kTrackForce, 0));
+  b2Vec2 rightTrackLocation = tank_body_->GetWorldPoint(b2Vec2(0, 2));
+  b2Vec2 leftTrackLocation = tank_body_->GetWorldPoint(b2Vec2(0, -2));
 
-    bodyTransform_.rotate(bodyRotationRate() * deltaTime);
+  switch (motion_direction_) {
+    case kForwards:
+      tank_body_->ApplyForce(trackForce, rightTrackLocation);
+      tank_body_->ApplyForce(trackForce, leftTrackLocation);
+      break;
+    case kBackwards:
+      tank_body_->ApplyForce(-trackForce, rightTrackLocation);
+      tank_body_->ApplyForce(-trackForce, leftTrackLocation);
+      break;
+  }
+  switch (body_rotation_direction_) {
+    case kRight:
+      if (motion_direction_ != kBackwards) {
+        tank_body_->ApplyForce(-trackForce, rightTrackLocation);
+      }
+      if (motion_direction_ != kForwards) {
+        tank_body_->ApplyForce(trackForce, leftTrackLocation);
+      }
+      break;
+    case kLeft:
+      if (motion_direction_ != kForwards) {
+        tank_body_->ApplyForce(trackForce, rightTrackLocation);
+      }
+      if (motion_direction_ != kBackwards) {
+        tank_body_->ApplyForce(-trackForce, leftTrackLocation);
+      }
+      break;
+  }
 
-    float delta = speed() * deltaTime;
-    float xv = cos(bodyTransform_.getRotation()*M_PI/180);
-    float yv = sin(bodyTransform_.getRotation()*M_PI/180);
-    bodyTransform_.move(delta * xv, delta * yv);
-
-    turretTransform_.rotate(turretRotationRate() * deltaTime);
+  float kTurretSpeed = 3;
+  switch (turret_rotation_direction_) {
+    case kRight:
+      turret_joint_->SetMotorSpeed(kTurretSpeed);
+      break;
+    case kLeft:
+      turret_joint_->SetMotorSpeed(-kTurretSpeed);
+      break;
+    default:
+      turret_joint_->SetMotorSpeed(0);
   }
 }
 
-void Tank::onDraw(sf::RenderWindow& window) {
-  sf::RectangleShape body_shell(Vector(40,32));
+void Tank::PostPhysics(float elapsed_seconds) {
+}
+
+void Tank::Render(sf::RenderWindow& window) {
+/*  sf::RectangleShape body_shell(Vector(40,32));
   body_shell.setFillColor(sf::Color::White);
   body_shell.setOrigin(16,16);
   body_shell.setPosition(bodyTransform_.getPosition());
@@ -91,7 +182,19 @@ void Tank::onDraw(sf::RenderWindow& window) {
 
   window.draw(body_shell);
   window.draw(turret_shell);
-  window.draw(turret_gun);
+  window.draw(turret_gun);*/
+}
+/*
+sf::Vector2<float> Tank::location() const {
+  return bodyTransform_.getPosition();
+}
+
+float Tank::bodyRotation() const {
+  return bodyTransform_.getRotation();
+}
+
+float Tank::turretRotation() const {
+  return turretTransform_.getRotation();
 }
 
 float Tank::speed() const {
@@ -153,15 +256,5 @@ float Tank::turretRotationRate() {
     << "body_angle=" << t.bodyRotation() << " "
     << "turret_angle=" << t.turretRotation() << "]";
 }
-
+*/
 } // namespace TankBattle
-
-
-namespace sf {
-::std::ostream& operator<<(::std::ostream& os, const Vector2<float>& v) {
-  return os << ::std::fixed << ::std::setprecision(2) 
-    << "Vector["
-    << "x=" << v.x << " "
-    << "y=" << v.y << "]";
-}
-} // namespace "sf" 
